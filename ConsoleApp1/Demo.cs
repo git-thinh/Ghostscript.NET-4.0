@@ -407,6 +407,8 @@ namespace ConsoleApp1
 
                 //cf.Add("-dPDFSETTINGS=/printer"); // /screen, /default, /ebook, /printer, /prepress
 
+                //cf.Add("-r72");
+                cf.Add("-r96");
 
                 cf.Add("-o" + outputPipeHandle);
                 cf.Add("-q");
