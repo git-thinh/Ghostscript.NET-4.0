@@ -111,7 +111,7 @@ namespace ConsoleApp1
                                         //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
                                         //    ghostscript.Process(__VECTOR_TO_PDF(fileInput, fileOutput));
                                         //}
-                                        var rs = __VECTOR_TO_PDF(fileInput);
+                                        var rs = __VECTOR_TO_PDF(fileInput, buf);
                                         if (rs != null) File.WriteAllBytes(fileOutput, rs);
                                     }
                                     break;
@@ -362,8 +362,23 @@ namespace ConsoleApp1
             return cf.ToArray();
         }
 
-        static byte[] __VECTOR_TO_PDF(string fileInput)
+        static byte[] __VECTOR_TO_PDF(string fileInput, byte[] bufInput,int dpi = 96)
         {
+            int width = 0, height = 0;
+            GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
+            using (var rasterizer = new GhostscriptRasterizer())
+            {
+                rasterizer.Open(new MemoryStream(bufInput), gvi, false);
+                //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
+                var img = rasterizer.GetPage(dpi, 1);
+                width = img.Width;
+                height = img.Height;
+                img.Save(@"C:\1.png", System.Drawing.Imaging.ImageFormat.Png);
+            }
+
+            int pw = width * 72 / dpi;
+            int ph = height * 72 / dpi;
+
             GhostscriptPipedOutput gsPipedOutput = new GhostscriptPipedOutput();
 
             // pipe handle format: %handle%hexvalue
@@ -380,14 +395,15 @@ namespace ConsoleApp1
                 cf.Add("-dNOPROMPT");
                 cf.Add("-sDEVICE=pdfwrite");
 
+
                 cf.Add("-dCompatibilityLevel=1.4");
                 cf.Add("-dDOINTERPOLATE");
 
-                //cf.Add("-dFIXEDMEDIA");
-                //cf.Add("-dPDFFitPage");
+                cf.Add("-dFIXEDMEDIA");
+                cf.Add("-dPDFFitPage");
 
-                cf.Add("-dDEVICEWIDTHPOINTS=733");
-                cf.Add("-dDEVICEHEIGHTPOINTS=757");
+                cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
+                cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
 
                 //cf.Add("-dPDFSETTINGS=/printer"); // /screen, /default, /ebook, /printer, /prepress
 
