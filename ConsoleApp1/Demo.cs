@@ -111,7 +111,7 @@ namespace ConsoleApp1
                                         //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
                                         //    ghostscript.Process(__VECTOR_TO_PDF(fileInput, fileOutput));
                                         //}
-                                        var rs = __VECTOR_TO_PDF(fileInput, buf);
+                                        var rs = __VECTOR_TO_PDF(fileInput, buf, fileOutput);
                                         if (rs != null) File.WriteAllBytes(fileOutput, rs);
                                     }
                                     break;
@@ -362,75 +362,112 @@ namespace ConsoleApp1
             return cf.ToArray();
         }
 
-        static byte[] __VECTOR_TO_PDF(string fileInput, byte[] bufInput,int dpi = 96)
+        static byte[] __VECTOR_TO_PDF(string fileInput, byte[] bufInput, string fileOutput, int dpi = 96)
         {
-            int width = 0, height = 0;
-            GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
-            using (var rasterizer = new GhostscriptRasterizer())
+            try
             {
-                rasterizer.Open(new MemoryStream(bufInput), gvi, false);
-                //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
-                var img = rasterizer.GetPage(dpi, 1);
-                width = img.Width;
-                height = img.Height;
-                img.Save(@"C:\1.png", System.Drawing.Imaging.ImageFormat.Png);
+                int width = 0, height = 0;
+                GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
+                using (var rasterizer = new GhostscriptRasterizer())
+                {
+                    rasterizer.Open(new MemoryStream(bufInput), gvi, false);
+                    //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
+                    var img = rasterizer.GetPage(dpi, 1);
+                    width = img.Width;
+                    height = img.Height;
+                    //img.Save(@"C:\1.png", System.Drawing.Imaging.ImageFormat.Png);
+                }
+
+                int pw = width * 72 / dpi;
+                int ph = height * 72 / dpi;
+
+                GhostscriptPipedOutput gsPipedOutput = new GhostscriptPipedOutput();
+
+                // pipe handle format: %handle%hexvalue
+                string outputPipeHandle = "%handle%" + int.Parse(gsPipedOutput.ClientHandle).ToString("X2");
+
+                using (GhostscriptProcessor processor = new GhostscriptProcessor())
+                {
+                    List<string> cf = new List<string>();
+                    cf.Add("-dBATCH");
+                    cf.Add("-dNOPAUSE");
+                    cf.Add("-dNOPAUSE");
+                    cf.Add("-sDEVICE=pdfwrite");
+
+                    cf.Add("-dDOINTERPOLATE");
+                    cf.Add("-dFIXEDMEDIA");
+                    cf.Add("-dPDFFitPage");
+
+                    cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
+                    cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
+
+
+                    //cf.Add("-sOutputFile=" + fileOutput);
+                    cf.Add("-o" + outputPipeHandle);
+                    cf.Add("-q");
+
+                    cf.Add("-c");
+                    cf.Add("[/CropBox [64 33 98 47] /PAGES pdfmark");
+                    //cf.Add(POSTSCRIPT_APPEND_WATERMARK_2);
+
+                    cf.Add("-f");
+                    cf.Add(fileInput);
+
+
+
+
+
+
+                    //////cf.Add("-empty");
+                    //////cf.Add("-dQUIET");
+                    //////cf.Add("-dSAFER");
+                    //////cf.Add("-dBATCH");
+                    //////cf.Add("-dNOPAUSE");
+                    //////cf.Add("-dNOPROMPT");
+                    //////cf.Add("-sDEVICE=pdfwrite");
+
+
+                    //////cf.Add("-dCompatibilityLevel=1.4");
+                    //////cf.Add("-dDOINTERPOLATE");
+
+                    //////cf.Add("-dFIXEDMEDIA");
+                    //////cf.Add("-dPDFFitPage");
+
+                    //////cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
+                    //////cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
+
+                    ////////cf.Add("-dPDFSETTINGS=/printer"); // /screen, /default, /ebook, /printer, /prepress
+
+                    ////////cf.Add("-r72");
+                    //////cf.Add("-r96");
+
+                    ////////cf.Add("-c");
+                    ////////cf.Add(POSTSCRIPT_APPEND_WATERMARK);
+
+                    //////cf.Add("-o" + outputPipeHandle);
+                    //////cf.Add("-q");
+                    //////cf.Add("-f");
+                    //////cf.Add(fileInput);
+
+                    try
+                    {
+                        processor.StartProcessing(cf.ToArray(), null);
+                        byte[] buf = gsPipedOutput.Data;
+                        return buf;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        gsPipedOutput.Dispose();
+                        gsPipedOutput = null;
+                    }
+                }
             }
+            catch { }
 
-            int pw = width * 72 / dpi;
-            int ph = height * 72 / dpi;
-
-            GhostscriptPipedOutput gsPipedOutput = new GhostscriptPipedOutput();
-
-            // pipe handle format: %handle%hexvalue
-            string outputPipeHandle = "%handle%" + int.Parse(gsPipedOutput.ClientHandle).ToString("X2");
-
-            using (GhostscriptProcessor processor = new GhostscriptProcessor())
-            {
-                List<string> cf = new List<string>();
-                cf.Add("-empty");
-                cf.Add("-dQUIET");
-                cf.Add("-dSAFER");
-                cf.Add("-dBATCH");
-                cf.Add("-dNOPAUSE");
-                cf.Add("-dNOPROMPT");
-                cf.Add("-sDEVICE=pdfwrite");
-
-
-                cf.Add("-dCompatibilityLevel=1.4");
-                cf.Add("-dDOINTERPOLATE");
-
-                cf.Add("-dFIXEDMEDIA");
-                cf.Add("-dPDFFitPage");
-
-                cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
-                cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
-
-                //cf.Add("-dPDFSETTINGS=/printer"); // /screen, /default, /ebook, /printer, /prepress
-
-                //cf.Add("-r72");
-                cf.Add("-r96");
-
-                cf.Add("-o" + outputPipeHandle);
-                cf.Add("-q");
-                cf.Add("-f");
-                cf.Add(fileInput);
-
-                try
-                {
-                    processor.StartProcessing(cf.ToArray(), null);
-                    byte[] buf = gsPipedOutput.Data;
-                    return buf;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    gsPipedOutput.Dispose();
-                    gsPipedOutput = null;
-                }
-            }
             return null;
         }
 
@@ -438,5 +475,36 @@ namespace ConsoleApp1
 
         static void ghostscript_Processing(object sender, GhostscriptProcessorProcessingEventArgs e)
             => Console.WriteLine(e.CurrentPage.ToString() + " / " + e.TotalPages.ToString());
+
+        static string height = "100", width = "100", left = "90", top = "30";
+        static string POSTSCRIPT_APPEND_WATERMARK_2 = @"
+
+%!
+<<
+    /PageSize [595 342]
+    /EndPage {
+        exch pop 2 lt {
+            currentpagedevice /PageSize get  %% stack has array [width height]
+
+newpath
+" + left + @" " + top + @" moveto
+0 " + height + @" rlineto
+"+ width + @" 0 rlineto
+0 -" + height + @" rlineto
+-" + width + @" 0 rlineto
+closepath
+gsave
+0.5 1 0.5 setrgbcolor
+%%fill
+grestore
+1 0 0 setrgbcolor
+4 setlinewidth
+stroke
+
+            true
+        } { false } ifelse
+    }bind
+>>setpagedevice";
+
     }
 }
