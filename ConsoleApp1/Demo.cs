@@ -391,24 +391,31 @@ namespace ConsoleApp1
                     List<string> cf = new List<string>();
                     cf.Add("-dBATCH");
                     cf.Add("-dNOPAUSE");
-                    cf.Add("-dNOPAUSE");
+
                     cf.Add("-sDEVICE=pdfwrite");
 
                     cf.Add("-dDOINTERPOLATE");
+
                     cf.Add("-dFIXEDMEDIA");
                     cf.Add("-dPDFFitPage");
 
                     cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
                     cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
 
+                    cf.Add("-dALLOWPSTRANSPARENCY");
+                    cf.Add("-dEPSCrop");
 
                     //cf.Add("-sOutputFile=" + fileOutput);
                     cf.Add("-o" + outputPipeHandle);
                     cf.Add("-q");
 
-                    cf.Add("-c");
-                    cf.Add("[/CropBox [64 33 98 47] /PAGES pdfmark");
-                    //cf.Add(POSTSCRIPT_APPEND_WATERMARK_2);
+                    //cf.Add("-dUseCropBox");
+                    //cf.Add("-c");
+                    //cf.Add("[/CropBox [64 33 198 147] /PAGES pdfmark");
+
+                    //cf.Add("-dUseArtBox");
+                    //cf.Add("-c");
+                    //cf.Add("[/ArtBox [64 33 98 47] /PAGES pdfmark");
 
                     cf.Add("-f");
                     cf.Add(fileInput);
