@@ -42,6 +42,9 @@ namespace SendFile
             this.label1 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.labelFile = new System.Windows.Forms.Label();
+            this.labelOK = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBoxDPI = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -164,11 +167,47 @@ namespace SendFile
             this.labelFile.Size = new System.Drawing.Size(0, 13);
             this.labelFile.TabIndex = 4;
             // 
+            // labelOK
+            // 
+            this.labelOK.AutoSize = true;
+            this.labelOK.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.labelOK.ForeColor = System.Drawing.Color.Red;
+            this.labelOK.Location = new System.Drawing.Point(357, 85);
+            this.labelOK.Name = "labelOK";
+            this.labelOK.Padding = new System.Windows.Forms.Padding(5);
+            this.labelOK.Size = new System.Drawing.Size(32, 23);
+            this.labelOK.TabIndex = 5;
+            this.labelOK.Text = "OK";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(460, 15);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(25, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "DPI";
+            // 
+            // textBoxDPI
+            // 
+            this.textBoxDPI.BackColor = System.Drawing.SystemColors.Info;
+            this.textBoxDPI.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBoxDPI.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxDPI.Location = new System.Drawing.Point(491, 15);
+            this.textBoxDPI.Name = "textBoxDPI";
+            this.textBoxDPI.Size = new System.Drawing.Size(59, 13);
+            this.textBoxDPI.TabIndex = 7;
+            this.textBoxDPI.Text = "70";
+            this.textBoxDPI.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // fMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(579, 117);
+            this.Controls.Add(this.textBoxDPI);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.labelOK);
             this.Controls.Add(this.labelFile);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.groupBox1);
@@ -199,6 +238,9 @@ namespace SendFile
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label labelFile;
+        private System.Windows.Forms.Label labelOK;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox textBoxDPI;
     }
 }
 

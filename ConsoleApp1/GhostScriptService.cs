@@ -1,153 +1,26 @@
 ﻿using Ghostscript.NET;
 using Ghostscript.NET.Processor;
 using Ghostscript.NET.Rasterizer;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ImageServiceConsole
 {
-    class Demo
+    public class GhostScriptService
     {
         const string GS_VERSION_DLL = @"C:\Program Files\gs\gs9.55.0\bin\gsdll64.dll";
-        private GhostscriptVersionInfo _gs_verssion_info = GhostscriptVersionInfo.GetLastInstalledVersion();
-
-
-        const int MAX_CONNECTION = 10;
-        const int PORT_NUMBER = 54321;
-        static int _connectionsCount = 0;
-        static TcpListener listener;
-
-        static string[] __services = new string[] { "VECTOR_TO_PNG", "VECTOR_TO_INFO_SIZE", "VECTOR_TO_PDF", "VECTOR_TO_PDF_SELECTION", "PDF_TO_PNG" };
-
-        static IDatabase _dbWrite;
-        static IDatabase _dbRead;
-        public static void Main1()
-        {
-            ConnectionMultiplexer r1 = ConnectionMultiplexer.Connect("localhost:1000");
-            _dbWrite = r1.GetDatabase(1);
-            ConnectionMultiplexer r2 = ConnectionMultiplexer.Connect("localhost:1001");
-            _dbRead = r2.GetDatabase(1);
-
-            IPAddress address = IPAddress.Parse("127.0.0.1");
-
-            listener = new TcpListener(address, PORT_NUMBER);
-            Console.WriteLine("Waiting for connection...");
-            listener.Start();
-
-            while (_connectionsCount < MAX_CONNECTION || MAX_CONNECTION == 0)
-            {
-                Socket soc = listener.AcceptSocket();
-                _connectionsCount++;
-                Thread t = new Thread((obj) => { DoWork((Socket)obj); });
-                t.Start(soc);
-            }
-        }
-
-
-        static void DoWork(Socket soc)
-        {
-            string pathInput = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\inputs\\";
-            string pathOutput = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\outputs\\";
-
-            if (!Directory.Exists(pathInput)) Directory.CreateDirectory(pathInput);
-            if (!Directory.Exists(pathOutput)) Directory.CreateDirectory(pathOutput);
-
-            //Console.WriteLine("Connection received from: {0}", soc.RemoteEndPoint);
-            try
-            {
-                var stream = new NetworkStream(soc);
-
-                byte[] buf = new byte[36];
-                int sz = stream.Read(buf, 0, 36);
-
-                string id = System.Text.ASCIIEncoding.ASCII.GetString(buf);
-                Console.WriteLine(id);
-                buf = _dbRead.StringGet(id);
-                if (buf != null)
-                {
-                    string[] a = id.Split('-');
-                    if (a.Length > 2)
-                    {
-                        int serviceIndex = -1;
-                        int.TryParse(a[0], out serviceIndex);
-                        string fileType = a[1];
-                        if (serviceIndex >= 0 && serviceIndex < __services.Length)
-                        {
-                            string fileInput = pathInput + id + "." + fileType;
-                            if (!File.Exists(fileInput)) File.WriteAllBytes(fileInput, buf);
-                            string fileOutput;
-
-                            string service = __services[serviceIndex];
-                            switch (service)
-                            {
-                                case "VECTOR_TO_PNG":
-                                    {
-                                        fileOutput = pathOutput + id + ".png";
-                                        //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
-                                        //{
-                                        //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
-                                        //    ghostscript.Process(__VECTOR_TO_PNG(fileInput, fileOutput));
-                                        //}
-                                        var rs = __VECTOR_TO_PNG(buf);
-                                        if (rs != null) File.WriteAllBytes(fileOutput, rs);
-                                    }
-                                    break;
-                                case "VECTOR_TO_INFO_SIZE":
-                                    break;
-                                case "VECTOR_TO_PDF":
-                                    {
-                                        fileOutput = pathOutput + id + ".pdf";
-                                        //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
-                                        //{
-                                        //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
-                                        //    ghostscript.Process(__VECTOR_TO_PDF(fileInput, fileOutput));
-                                        //}
-                                        var rs = __VECTOR_TO_PDF(fileInput, buf, fileOutput);
-                                        if (rs != null) File.WriteAllBytes(fileOutput, rs);
-                                    }
-                                    break;
-                                case "VECTOR_TO_PDF_SELECTION":
-                                    break;
-                                case "PDF_TO_PNG":
-                                    {
-                                        fileOutput = pathOutput + id + ".png";
-                                        //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
-                                        //{
-                                        //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
-                                        //    ghostscript.Process(__PDF_TO_PNG(fileInput, fileOutput));
-                                        //}
-                                        var rs = __PDF_TO_PNG(fileInput, 96);
-                                        if (rs != null) File.WriteAllBytes(fileOutput, rs);
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                stream.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex);
-            }
-
-            //Console.WriteLine("Client disconnected: {0}", soc.RemoteEndPoint);
-            soc.Close();
-        }
+        static GhostscriptVersionInfo _gs_verssion_info = GhostscriptVersionInfo.GetLastInstalledVersion();
 
         #region [ PDF_TO_PNG ]
 
-        static string[] __PDF_TO_PNG(string fileInput, string fileOutput)
+        public static string[] __PDF_TO_PNG(string fileInput, string fileOutput)
         {
             List<string> cf = new List<string>();
             cf.Add("-empty");
@@ -166,22 +39,30 @@ namespace ImageServiceConsole
             cf.Add(fileInput);
             return cf.ToArray();
         }
-        static byte[] __PDF_TO_PNG(string fileInput, int desired_dpi = 96)
+        public static bool __PDF_TO_PNG(string id, byte[] buf, IDatabase _redisWrite, IDatabase _redisRead, int desired_dpi = 96)
         {
-            GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
-            using (var rasterizer = new GhostscriptRasterizer())
-            {
-                rasterizer.Open(fileInput, gvi, false);
+            bool ok = false;
+            //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
+            //{
+            //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
+            //    ghostscript.Process(__PDF_TO_PNG(fileInput, fileOutput));
+            //}
 
-                //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
-                var img = rasterizer.GetPage(desired_dpi, 1);
-                var ms = new MemoryStream();
-                img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                return ms.ToArray();
-            }
-            return null;
+            //GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
+            //using (var rasterizer = new GhostscriptRasterizer())
+            //{
+            //    rasterizer.Open(fileInput, gvi, false);
+
+            //    //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
+            //    var img = rasterizer.GetPage(desired_dpi, 1);
+            //    var ms = new MemoryStream();
+            //    img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            //    return ms.ToArray();
+            //}
+            return ok;
         }
-        static byte[] __PDF_TO_PNG(byte[] bufInput, int desired_dpi = 96)
+
+        public static byte[] __PDF_TO_PNG(byte[] bufInput, int desired_dpi = 96)
         {
             GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
             using (var rasterizer = new GhostscriptRasterizer())
@@ -197,7 +78,7 @@ namespace ImageServiceConsole
             return null;
         }
 
-        static void __PDF_TO_PNG2(string fileInput, string fileOutput)
+        public static void __PDF_TO_PNG2(string fileInput, string fileOutput)
         {
             GhostscriptPngDevice dev = new GhostscriptPngDevice(GhostscriptPngDeviceType.Png16m);
             dev.GraphicsAlphaBits = GhostscriptImageDeviceAlphaBits.V_4;
@@ -299,52 +180,107 @@ namespace ImageServiceConsole
 
         #region [ VECTOR_TO_PNG ]
 
-        static byte[] __VECTOR_TO_PNG(byte[] bufInput, int desired_dpi = 96)
+        public static bool __VECTOR_TO_PNG_v1(string id, byte[] bufInput, IDatabase _redisWrite, IDatabase _redisRead, int desired_dpi = 96)
         {
+            bool ok = false;
+            //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
+            //{
+            //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
+            //    ghostscript.Process(__VECTOR_TO_PNG(fileInput, fileOutput));
+            //}
+
             GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
-            using (var rasterizer = new GhostscriptRasterizer())
+            using (var r = new GhostscriptRasterizer())
             {
-                rasterizer.Open(new MemoryStream(bufInput), gvi, false);
+                r.Open(new MemoryStream(bufInput), gvi, false);
+                r.GraphicsAlphaBits = 0;
 
                 //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
-                var img = rasterizer.GetPage(desired_dpi, 1);
+                var img = r.GetPage(desired_dpi, 1);
                 var ms = new MemoryStream();
                 img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                return ms.ToArray();
+                var rs = ms.ToArray();
+                _redisWrite.StringSet("img:png:" + id, rs);
+                ok = true;
             }
-            return null;
+            return ok;
         }
 
-        static string[] __VECTOR_TO_PNG(string fileInput, string fileOutput)
+        static string[] __vector_to_png(string fileInput, string fileOutput)
         {
             List<string> cf = new List<string>();
-            //cf.Add("-q");
-            cf.Add("-empty");
-            cf.Add("-dSAFER");
-            cf.Add("-dBATCH");
+            cf.Add("-q");
+            //cf.Add("-empty");
+            //cf.Add("-dSAFER");
             cf.Add("-dNOPAUSE");
-            cf.Add("-dNOPROMPT");
-            cf.Add(@"-sFONTPATH=" + System.Environment.GetFolderPath(System.Environment.SpecialFolder.Fonts));
-            cf.Add("-dFirstPage=1");
-            cf.Add("-dLastPage=1");
-            cf.Add("-sDEVICE=png16m");
-            //cf.Add("-r72");
-            cf.Add("-r96");
+            cf.Add("-dBATCH");
+            //cf.Add("-dNOPROMPT");
+
+            //cf.Add(@"-sFONTPATH=" + System.Environment.GetFolderPath(System.Environment.SpecialFolder.Fonts));
+
+            //cf.Add("-dFirstPage=1");
+            //cf.Add("-dLastPage=1");
+
+            //cf.Add("-sDEVICE=png16m");
+            cf.Add("-sDEVICE=pngalpha");
+            //cf.Add("-dBackgroundColor=16#CCCC00");
+
+            cf.Add("-r70");
+            //cf.Add("-r96");
+
             //cf.Add("-sPAPERSIZE=a4");
             //cf.Add("-dNumRenderingThreads=" + Environment.ProcessorCount.ToString());
-            cf.Add("-dTextAlphaBits=4");
-            cf.Add("-dGraphicsAlphaBits=4");
+
+            //cf.Add("-dAlignToPixels=0");
+            //cf.Add("-dTextAlphaBits=4");
+            //cf.Add("-dGraphicsAlphaBits=4");
 
             cf.Add(@"-sOutputFile=" + fileOutput);
             cf.Add(@"-f" + fileInput);
             return cf.ToArray();
         }
 
+        public static bool __VECTOR_TO_PNG_v2(string id, byte[] bufInput, IDatabase _redisWrite, IDatabase _redisRead, int desired_dpi = 96)
+        {
+            string fileInput = Helper.getFileInput_byID(id);
+            File.WriteAllBytes(fileInput, bufInput);
+            string fileOutput = Helper.getFileOutput_byID(id, "png");
+            if (File.Exists(fileOutput)) File.Delete(fileOutput);
+
+            bool ok = false;
+            using (GhostscriptProcessor g = new GhostscriptProcessor())
+            {
+                g.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
+                string[] a = __vector_to_png(fileInput, fileOutput);
+                g.Process(a);
+            }
+            return ok;
+        }
+
+        public static bool __VECTOR_TO_INFO_SIZE(string id, byte[] bufInput, IDatabase _redisWrite, IDatabase _redisRead, int desired_dpi = 96)
+        {
+            bool ok = false;
+            GhostscriptVersionInfo gvi = new GhostscriptVersionInfo(GS_VERSION_DLL);
+            using (var rasterizer = new GhostscriptRasterizer())
+            {
+                rasterizer.Open(new MemoryStream(bufInput), gvi, false);
+                //rasterizer.GraphicsAlphaBits = 0;
+
+                //for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)/
+                var img = rasterizer.GetPage(desired_dpi, 1);
+                string json = JsonConvert.SerializeObject(new { Width = img.Width, Height = img.Height });
+                _redisWrite.StringSet("img:size:" + id, json);
+                ok = true;
+            }
+            return ok;
+        }
+
+
         #endregion
 
         #region [ VECTOR_TO_PDF ]
 
-        static string[] __VECTOR_TO_PDF(string fileInput, string fileOutput)
+        public static string[] __VECTOR_TO_PDF(string fileInput, string fileOutput)
         {
             List<string> cf = new List<string>();
             cf.Add("-dBATCH");
@@ -362,8 +298,19 @@ namespace ImageServiceConsole
             return cf.ToArray();
         }
 
-        static byte[] __VECTOR_TO_PDF(string fileInput, byte[] bufInput, string fileOutput, int dpi = 96)
+        public static bool __VECTOR_TO_PDF(string id, byte[] bufInput, IDatabase _redisWrite, IDatabase _redisRead, int dpi = 96)
         {
+            bool ok = false;
+            string fileInput = Helper.getFileInput_byID(id);
+            File.WriteAllBytes(fileInput, bufInput);
+
+
+            //using (GhostscriptProcessor ghostscript = new GhostscriptProcessor())
+            //{
+            //    ghostscript.Processing += new GhostscriptProcessorProcessingEventHandler(ghostscript_Processing);
+            //    ghostscript.Process(__VECTOR_TO_PDF(fileInput, fileOutput));
+            //}
+
             try
             {
                 int width = 0, height = 0;
@@ -459,8 +406,10 @@ namespace ImageServiceConsole
                     try
                     {
                         processor.StartProcessing(cf.ToArray(), null);
-                        byte[] buf = gsPipedOutput.Data;
-                        return buf;
+                        byte[] rs = gsPipedOutput.Data;
+
+                        _redisWrite.StringSet("vec2pdf:" + id, rs);
+                        ok = true;
                     }
                     catch (Exception ex)
                     {
@@ -475,7 +424,7 @@ namespace ImageServiceConsole
             }
             catch { }
 
-            return null;
+            return ok;
         }
 
         #endregion
@@ -496,7 +445,7 @@ namespace ImageServiceConsole
 newpath
 " + left + @" " + top + @" moveto
 0 " + height + @" rlineto
-"+ width + @" 0 rlineto
+" + width + @" 0 rlineto
 0 -" + height + @" rlineto
 -" + width + @" 0 rlineto
 closepath
