@@ -22,6 +22,7 @@ namespace FileView
         const string GS_VERSION_DLL = @"C:\Program Files\gs\gs9.55.0\bin\gsdll64.dll";
         //static GhostscriptVersionInfo GS_VERSION_INFO = GhostscriptVersionInfo.GetLastInstalledVersion();
         static GhostscriptVersionInfo GS_VERSION_INFO = new GhostscriptVersionInfo(GS_VERSION_DLL);
+        const string __SCOPE_REDIS = "file";
 
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
@@ -137,7 +138,7 @@ namespace FileView
                         }
 
                         IOFile.Delete(fileInput);
-                        _redisWrite.StringSet("img:png:" + id, rs);
+                        _redisWrite.StringSet(__SCOPE_REDIS + ":png:" + id, rs);
                         if (rs != null)
                             return File(new MemoryStream(rs), "application/octet-stream");
                     }
@@ -189,8 +190,9 @@ namespace FileView
                         }
 
                         IOFile.Delete(fileInput);
-                        _redisWrite.StringSet("img:png:" + id, rs);
-                        if (rs != null) {
+                        _redisWrite.StringSet(__SCOPE_REDIS + ":png:" + id, rs);
+                        if (rs != null)
+                        {
                             var img = Bitmap.FromStream(new MemoryStream(rs));
                             var size = new { Width = img.Width, Height = img.Height };
                             img.Dispose();
@@ -214,10 +216,9 @@ namespace FileView
             List<string> cf = new List<string>();
             cf.Add("-dBATCH");
             cf.Add("-dNOPAUSE");
+            cf.Add("-dDOINTERPOLATE");
 
             cf.Add("-sDEVICE=pdfwrite");
-
-            cf.Add("-dDOINTERPOLATE");
 
             //cf.Add("-dFIXEDMEDIA");
             //cf.Add("-dPDFFitPage");
@@ -226,6 +227,8 @@ namespace FileView
 
             cf.Add("-dALLOWPSTRANSPARENCY");
             cf.Add("-dEPSCrop");
+
+            cf.Add("-r" + dpi.ToString());
 
             //cf.Add("-sOutputFile=" + fileOutput);
             cf.Add("-o" + outputPipeHandle);
@@ -277,7 +280,7 @@ namespace FileView
             //////cf.Add("-q");
             //////cf.Add("-f");
             //////cf.Add(fileInput);
-            
+
             return cf.ToArray();
         }
 
@@ -321,7 +324,7 @@ namespace FileView
                         }
 
                         IOFile.Delete(fileInput);
-                        _redisWrite.StringSet("img:pdf:" + id, rs);
+                        _redisWrite.StringSet(__SCOPE_REDIS + ":pdf:" + id, rs);
                         if (rs != null)
                             return File(new MemoryStream(rs), "application/octet-stream");
                     }
@@ -332,7 +335,7 @@ namespace FileView
             }
             return NotFound();
         }
-         
+
         #endregion
     }
 
