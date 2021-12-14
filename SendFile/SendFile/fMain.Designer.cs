@@ -45,12 +45,13 @@ namespace SendFile
             this.labelOK = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.textBoxDPI = new System.Windows.Forms.TextBox();
+            this.textBoxAPI = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(187, 86);
+            this.button1.Location = new System.Drawing.Point(187, 104);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 0;
@@ -62,7 +63,7 @@ namespace SendFile
             // 
             this.ddlService.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddlService.FormattingEnabled = true;
-            this.ddlService.Location = new System.Drawing.Point(8, 88);
+            this.ddlService.Location = new System.Drawing.Point(8, 106);
             this.ddlService.Name = "ddlService";
             this.ddlService.Size = new System.Drawing.Size(173, 21);
             this.ddlService.TabIndex = 1;
@@ -73,12 +74,12 @@ namespace SendFile
             this.groupBox1.Controls.Add(this.selectionText_Width);
             this.groupBox1.Controls.Add(this.selectionText_Height);
             this.groupBox1.Controls.Add(this.selectionText_X);
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.selectionText_Y);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(8, 31);
+            this.groupBox1.Location = new System.Drawing.Point(8, 49);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(564, 50);
             this.groupBox1.TabIndex = 2;
@@ -87,36 +88,40 @@ namespace SendFile
             // 
             // selectionText_Width
             // 
-            this.selectionText_Width.Location = new System.Drawing.Point(44, 19);
+            this.selectionText_Width.Location = new System.Drawing.Point(295, 20);
             this.selectionText_Width.Name = "selectionText_Width";
             this.selectionText_Width.Size = new System.Drawing.Size(100, 20);
             this.selectionText_Width.TabIndex = 3;
+            this.selectionText_Width.Text = "0";
             // 
             // selectionText_Height
             // 
-            this.selectionText_Height.Location = new System.Drawing.Point(191, 18);
+            this.selectionText_Height.Location = new System.Drawing.Point(442, 19);
             this.selectionText_Height.Name = "selectionText_Height";
             this.selectionText_Height.Size = new System.Drawing.Size(100, 20);
             this.selectionText_Height.TabIndex = 4;
+            this.selectionText_Height.Text = "0";
             // 
             // selectionText_X
             // 
-            this.selectionText_X.Location = new System.Drawing.Point(328, 19);
+            this.selectionText_X.Location = new System.Drawing.Point(27, 20);
             this.selectionText_X.Name = "selectionText_X";
             this.selectionText_X.Size = new System.Drawing.Size(80, 20);
             this.selectionText_X.TabIndex = 5;
+            this.selectionText_X.Text = "0";
             // 
             // selectionText_Y
             // 
-            this.selectionText_Y.Location = new System.Drawing.Point(450, 19);
+            this.selectionText_Y.Location = new System.Drawing.Point(149, 20);
             this.selectionText_Y.Name = "selectionText_Y";
             this.selectionText_Y.Size = new System.Drawing.Size(92, 20);
             this.selectionText_Y.TabIndex = 6;
+            this.selectionText_Y.Text = "0";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(311, 23);
+            this.label4.Location = new System.Drawing.Point(10, 24);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(14, 13);
             this.label4.TabIndex = 3;
@@ -125,7 +130,7 @@ namespace SendFile
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(434, 23);
+            this.label3.Location = new System.Drawing.Point(133, 24);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(14, 13);
             this.label3.TabIndex = 2;
@@ -134,7 +139,7 @@ namespace SendFile
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(155, 23);
+            this.label2.Location = new System.Drawing.Point(406, 24);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 13);
             this.label2.TabIndex = 1;
@@ -143,7 +148,7 @@ namespace SendFile
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 23);
+            this.label1.Location = new System.Drawing.Point(260, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 0;
@@ -151,7 +156,7 @@ namespace SendFile
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(268, 86);
+            this.button2.Location = new System.Drawing.Point(268, 104);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 3;
@@ -162,7 +167,7 @@ namespace SendFile
             // labelFile
             // 
             this.labelFile.AutoSize = true;
-            this.labelFile.Location = new System.Drawing.Point(17, 9);
+            this.labelFile.Location = new System.Drawing.Point(17, 27);
             this.labelFile.Name = "labelFile";
             this.labelFile.Size = new System.Drawing.Size(0, 13);
             this.labelFile.TabIndex = 4;
@@ -172,7 +177,7 @@ namespace SendFile
             this.labelOK.AutoSize = true;
             this.labelOK.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.labelOK.ForeColor = System.Drawing.Color.Red;
-            this.labelOK.Location = new System.Drawing.Point(357, 85);
+            this.labelOK.Location = new System.Drawing.Point(357, 103);
             this.labelOK.Name = "labelOK";
             this.labelOK.Padding = new System.Windows.Forms.Padding(5);
             this.labelOK.Size = new System.Drawing.Size(32, 23);
@@ -182,7 +187,7 @@ namespace SendFile
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(460, 15);
+            this.label5.Location = new System.Drawing.Point(460, 33);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(25, 13);
             this.label5.TabIndex = 6;
@@ -193,18 +198,29 @@ namespace SendFile
             this.textBoxDPI.BackColor = System.Drawing.SystemColors.Info;
             this.textBoxDPI.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBoxDPI.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDPI.Location = new System.Drawing.Point(491, 15);
+            this.textBoxDPI.Location = new System.Drawing.Point(491, 33);
             this.textBoxDPI.Name = "textBoxDPI";
             this.textBoxDPI.Size = new System.Drawing.Size(59, 13);
             this.textBoxDPI.TabIndex = 7;
             this.textBoxDPI.Text = "70";
             this.textBoxDPI.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // textBoxAPI
+            // 
+            this.textBoxAPI.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxAPI.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBoxAPI.Dock = System.Windows.Forms.DockStyle.Top;
+            this.textBoxAPI.Location = new System.Drawing.Point(0, 0);
+            this.textBoxAPI.Name = "textBoxAPI";
+            this.textBoxAPI.Size = new System.Drawing.Size(579, 13);
+            this.textBoxAPI.TabIndex = 8;
+            // 
             // fMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(579, 117);
+            this.ClientSize = new System.Drawing.Size(579, 135);
+            this.Controls.Add(this.textBoxAPI);
             this.Controls.Add(this.textBoxDPI);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.labelOK);
@@ -241,6 +257,7 @@ namespace SendFile
         private System.Windows.Forms.Label labelOK;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBoxDPI;
+        private System.Windows.Forms.TextBox textBoxAPI;
     }
 }
 

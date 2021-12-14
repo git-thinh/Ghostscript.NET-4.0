@@ -10,7 +10,7 @@ namespace SendFile
 {
     public partial class fMain : Form
     {
-        object[] __services = new object[] { "VECTOR_TO_PNG", "VECTOR_TO_INFO_SIZE", "VECTOR_TO_PDF", "VECTOR_TO_PDF_SELECTION", "PDF_TO_PNG" };
+        object[] __services = new object[] { "VECTOR_TO_PNG", "VECTOR_TO_INFO_SIZE", "VECTOR_TO_PDF", "VECTOR_TO_PDF_CROP", "VECTOR_TO_PDF_ARTBOARD" };
         const string __uri = "http://localhost:42269";
 
         const string IP = "127.0.0.1";
@@ -92,6 +92,8 @@ namespace SendFile
 
                     if (!Directory.Exists("./outputs"))
                         Directory.CreateDirectory("./outputs");
+                    
+                    apiUrlCreate();
 
                     var buf = new WebClient().DownloadData(__url);
                     if (buf != null)
@@ -110,9 +112,7 @@ namespace SendFile
                                 labelOK.Text = "SUCCESS: " + __id;
                                 break;
                             case 3: //VECTOR_TO_PDF_SELECTION
-                                break;
-                            case 4: //PDF_TO_PNG
-                                File.WriteAllBytes("./outputs/" + __id + ".png", buf);
+                                File.WriteAllBytes("./outputs/" + __id + ".crop.pdf", buf);
                                 labelOK.Text = "SUCCESS: " + __id;
                                 break;
                         }
@@ -136,29 +136,33 @@ namespace SendFile
                 if (__id.Length > 36) __id = __id.Substring(0, 36).ToLower();
                 this.Text = __id + " | " + file;
 
-                __dpi = textBoxDPI.Text.Trim();
-                switch (ddlService.SelectedIndex)
-                {
-                    case 0: //VECTOR_TO_PNG
-                        __url = __uri + "/api/vector/png/" + __dpi + "/" + __scope_raw + "/" + __id;
-                        break;
-                    case 1: //VECTOR_TO_INFO_SIZE
-                        __url = __uri + "/api/vector/size/" + __dpi + "/" + __scope_raw + "/" + __id;
-                        break;
-                    case 2: //VECTOR_TO_PDF
-                        __url = __uri + "/api/vector/pdf/" + __dpi + "/" + __scope_raw + "/" + __id;
-                        break;
-                    case 3: //VECTOR_TO_PDF_SELECTION
-                        __url = __uri + "" + __id;
-                        break;
-                    case 4: //PDF_TO_PNG
-                        __url = __uri + "" + __id;
-                        break;
-                }
+                apiUrlCreate();
 
                 byte[] bufData = File.ReadAllBytes(file);
                 _dbWrite.StringSet(__scope_raw + ":" + __id, bufData);
             }
+        }
+
+        void apiUrlCreate() {
+            __dpi = textBoxDPI.Text.Trim();
+            switch (ddlService.SelectedIndex)
+            {
+                case 0: //VECTOR_TO_PNG
+                    __url = __uri + "/api/vector/png/" + __dpi + "/" + __scope_raw + "/" + __id;
+                    break;
+                case 1: //VECTOR_TO_INFO_SIZE
+                    __url = __uri + "/api/vector/size/" + __dpi + "/" + __scope_raw + "/" + __id;
+                    break;
+                case 2: //VECTOR_TO_PDF
+                    __url = __uri + "/api/vector/pdf/" + __dpi + "/" + __scope_raw + "/" + __id;
+                    break;
+                case 3: //VECTOR_TO_PDF_SELECTION
+                    __url = __uri + "/api/vector/pdf/crop/" + __scope_raw + "/" + __id
+                        + "/" + selectionText_X.Text + "/" + selectionText_Y.Text
+                        + "/" + selectionText_Width.Text + "/" + selectionText_Height.Text;
+                    break;
+            }
+            textBoxAPI.Text = __url;
         }
     }
 }

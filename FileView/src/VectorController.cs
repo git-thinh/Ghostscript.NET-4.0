@@ -63,12 +63,23 @@ namespace FileView
         string[] __vector_to_png(int dpi, string fileInput, string outputPipeHandle)
         {
             List<string> cf = new List<string>();
-            cf.Add("-q");
-            //cf.Add("-empty");
-            //cf.Add("-dSAFER");
-            cf.Add("-dNOPAUSE");
             cf.Add("-dBATCH");
-            //cf.Add("-dNOPROMPT");
+            cf.Add("-dNOPAUSE");
+            cf.Add("-dDOINTERPOLATE");
+
+            //cf.Add("-q");
+            ////cf.Add("-empty");
+            ////cf.Add("-dSAFER");
+            //cf.Add("-dNOPAUSE");
+            //cf.Add("-dBATCH");
+            ////cf.Add("-dNOPROMPT");
+
+            //cf.Add("-dFIXEDMEDIA");
+            //cf.Add("-dFitPage");
+            //cf.Add("-dPDFFitPage");
+
+            cf.Add("-dALLOWPSTRANSPARENCY");
+            cf.Add("-dEPSCrop");
 
             //cf.Add(@"-sFONTPATH=" + System.Environment.GetFolderPath(System.Environment.SpecialFolder.Fonts));
 
@@ -325,6 +336,131 @@ namespace FileView
 
                         IOFile.Delete(fileInput);
                         _redisWrite.StringSet(__SCOPE_REDIS + ":pdf:" + id, rs);
+                        if (rs != null)
+                            return File(new MemoryStream(rs), "application/octet-stream");
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            return NotFound();
+        }
+
+        string[] __pdf_crop(string fileInput, string outputPipeHandle, int x, int y, int width, int height)
+        {
+            List<string> cf = new List<string>();
+            cf.Add("-dBATCH");
+            cf.Add("-dNOPAUSE");
+            cf.Add("-dDOINTERPOLATE");
+
+            cf.Add("-sDEVICE=pdfwrite");
+
+            //cf.Add("-dFIXEDMEDIA");
+            //cf.Add("-dPDFFitPage");
+            //cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
+            //cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
+
+            cf.Add("-dALLOWPSTRANSPARENCY");
+            cf.Add("-dEPSCrop");
+
+            //cf.Add("-sOutputFile=" + fileOutput);
+            cf.Add("-o" + outputPipeHandle);
+            cf.Add("-q");
+
+            if (width > 0 && height > 0)
+            {
+                cf.Add("-dUseCropBox");
+                cf.Add("-c");
+                cf.Add("[/CropBox [64 33 198 147] /PAGES pdfmark");
+            }
+
+            //cf.Add("-dUseArtBox");
+            //cf.Add("-c");
+            //cf.Add("[/ArtBox [64 33 98 47] /PAGES pdfmark");
+
+            cf.Add("-f");
+            cf.Add(fileInput);
+
+
+
+
+
+
+            //////cf.Add("-empty");
+            //////cf.Add("-dQUIET");
+            //////cf.Add("-dSAFER");
+            //////cf.Add("-dBATCH");
+            //////cf.Add("-dNOPAUSE");
+            //////cf.Add("-dNOPROMPT");
+            //////cf.Add("-sDEVICE=pdfwrite");
+
+
+            //////cf.Add("-dCompatibilityLevel=1.4");
+            //////cf.Add("-dDOINTERPOLATE");
+
+            //////cf.Add("-dFIXEDMEDIA");
+            //////cf.Add("-dPDFFitPage");
+
+            //////cf.Add("-dDEVICEWIDTHPOINTS=" + pw.ToString());
+            //////cf.Add("-dDEVICEHEIGHTPOINTS=" + ph.ToString());
+
+            ////////cf.Add("-dPDFSETTINGS=/printer"); // /screen, /default, /ebook, /printer, /prepress
+
+            ////////cf.Add("-r72");
+            //////cf.Add("-r96");
+
+            ////////cf.Add("-c");
+            ////////cf.Add(POSTSCRIPT_APPEND_WATERMARK);
+
+            //////cf.Add("-o" + outputPipeHandle);
+            //////cf.Add("-q");
+            //////cf.Add("-f");
+            //////cf.Add(fileInput);
+
+            return cf.ToArray();
+        }
+
+        [HttpGet("pdf/crop/{scope}/{id}/{x}/{y}/{width}/{height}")]
+        public async Task<IActionResult> toPDFCrop(string scope, string id, int x, int y, int width, int height)
+        {
+            if (!string.IsNullOrEmpty(id) && width > 0 && height > 0)
+            {
+                try
+                {
+                    string key = scope + ":" + id;
+                    byte[] buf = await _redisRead.StringGetAsync(key);
+                    if (buf != null)
+                    {
+                        byte[] rs = null;
+
+                        string path = _environment.WebRootPath + "\\temps\\";
+                        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                        string fileInput = path + id + "." + Helper.getFileType_byID(id);
+                        IOFile.WriteAllBytes(fileInput, buf);
+
+                        GhostscriptPipedOutput gsPipedOutput = new GhostscriptPipedOutput();
+                        string outputPipeHandle = "%handle%" + int.Parse(gsPipedOutput.ClientHandle).ToString("X2");
+                        using (GhostscriptProcessor g = new GhostscriptProcessor())
+                        {
+                            try
+                            {
+                                g.StartProcessing(__pdf_crop(fileInput, outputPipeHandle, x, y, width, height), null);
+                                rs = gsPipedOutput.Data;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                            finally
+                            {
+                                gsPipedOutput.Dispose();
+                                gsPipedOutput = null;
+                            }
+                        }
+
+                        IOFile.Delete(fileInput);
+                        _redisWrite.StringSet(__SCOPE_REDIS + ":crop:" + id, rs);
                         if (rs != null)
                             return File(new MemoryStream(rs), "application/octet-stream");
                     }
