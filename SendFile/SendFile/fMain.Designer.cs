@@ -32,20 +32,23 @@ namespace SendFile
             this.button1 = new System.Windows.Forms.Button();
             this.ddlService = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.selectionText_Width = new System.Windows.Forms.TextBox();
-            this.selectionText_Height = new System.Windows.Forms.TextBox();
-            this.selectionText_X = new System.Windows.Forms.TextBox();
-            this.selectionText_Y = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.cropBottom = new System.Windows.Forms.TextBox();
+            this.cropLeft = new System.Windows.Forms.TextBox();
+            this.cropTop = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.cropRight = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.labelFile = new System.Windows.Forms.Label();
             this.labelOK = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.textBoxDPI = new System.Windows.Forms.TextBox();
             this.textBoxAPI = new System.Windows.Forms.TextBox();
+            this.ddlRedis_IP = new System.Windows.Forms.ComboBox();
+            this.txtRedis_Port = new System.Windows.Forms.TextBox();
+            this.txtRedis_DB = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -71,12 +74,12 @@ namespace SendFile
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.selectionText_Width);
-            this.groupBox1.Controls.Add(this.selectionText_Height);
-            this.groupBox1.Controls.Add(this.selectionText_X);
+            this.groupBox1.Controls.Add(this.cropBottom);
+            this.groupBox1.Controls.Add(this.cropLeft);
+            this.groupBox1.Controls.Add(this.cropTop);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.selectionText_Y);
+            this.groupBox1.Controls.Add(this.cropRight);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Location = new System.Drawing.Point(8, 49);
@@ -86,73 +89,81 @@ namespace SendFile
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Selection Input";
             // 
-            // selectionText_Width
+            // cropBottom
             // 
-            this.selectionText_Width.Location = new System.Drawing.Point(295, 20);
-            this.selectionText_Width.Name = "selectionText_Width";
-            this.selectionText_Width.Size = new System.Drawing.Size(100, 20);
-            this.selectionText_Width.TabIndex = 3;
-            this.selectionText_Width.Text = "0";
+            this.cropBottom.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cropBottom.Location = new System.Drawing.Point(306, 20);
+            this.cropBottom.Name = "cropBottom";
+            this.cropBottom.Size = new System.Drawing.Size(89, 20);
+            this.cropBottom.TabIndex = 3;
+            this.cropBottom.Text = "50";
+            this.cropBottom.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // selectionText_Height
+            // cropLeft
             // 
-            this.selectionText_Height.Location = new System.Drawing.Point(442, 19);
-            this.selectionText_Height.Name = "selectionText_Height";
-            this.selectionText_Height.Size = new System.Drawing.Size(100, 20);
-            this.selectionText_Height.TabIndex = 4;
-            this.selectionText_Height.Text = "0";
+            this.cropLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cropLeft.Location = new System.Drawing.Point(442, 19);
+            this.cropLeft.Name = "cropLeft";
+            this.cropLeft.Size = new System.Drawing.Size(100, 20);
+            this.cropLeft.TabIndex = 4;
+            this.cropLeft.Text = "69";
+            this.cropLeft.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // selectionText_X
+            // cropTop
             // 
-            this.selectionText_X.Location = new System.Drawing.Point(27, 20);
-            this.selectionText_X.Name = "selectionText_X";
-            this.selectionText_X.Size = new System.Drawing.Size(80, 20);
-            this.selectionText_X.TabIndex = 5;
-            this.selectionText_X.Text = "0";
-            // 
-            // selectionText_Y
-            // 
-            this.selectionText_Y.Location = new System.Drawing.Point(149, 20);
-            this.selectionText_Y.Name = "selectionText_Y";
-            this.selectionText_Y.Size = new System.Drawing.Size(92, 20);
-            this.selectionText_Y.TabIndex = 6;
-            this.selectionText_Y.Text = "0";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 24);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(14, 13);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "X";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(133, 24);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(14, 13);
-            this.label3.TabIndex = 2;
-            this.label3.Text = "Y";
+            this.cropTop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cropTop.Location = new System.Drawing.Point(42, 20);
+            this.cropTop.Name = "cropTop";
+            this.cropTop.Size = new System.Drawing.Size(65, 20);
+            this.cropTop.TabIndex = 5;
+            this.cropTop.Text = "30";
+            this.cropTop.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(406, 24);
+            this.label2.Location = new System.Drawing.Point(417, 23);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.Size = new System.Drawing.Size(25, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Height";
+            this.label2.Text = "Left";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(260, 24);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.Size = new System.Drawing.Size(40, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Width";
+            this.label1.Text = "Bottom";
+            // 
+            // cropRight
+            // 
+            this.cropRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cropRight.Location = new System.Drawing.Point(171, 20);
+            this.cropRight.Name = "cropRight";
+            this.cropRight.Size = new System.Drawing.Size(70, 20);
+            this.cropRight.TabIndex = 6;
+            this.cropRight.Text = "99";
+            this.cropRight.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 24);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(26, 13);
+            this.label4.TabIndex = 3;
+            this.label4.Text = "Top";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(133, 24);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(32, 13);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "Right";
             // 
             // button2
             // 
@@ -215,11 +226,45 @@ namespace SendFile
             this.textBoxAPI.Size = new System.Drawing.Size(579, 13);
             this.textBoxAPI.TabIndex = 8;
             // 
+            // ddlRedis_IP
+            // 
+            this.ddlRedis_IP.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ddlRedis_IP.FormattingEnabled = true;
+            this.ddlRedis_IP.Items.AddRange(new object[] {
+            "127.0.0.1",
+            "10.1.1.117"});
+            this.ddlRedis_IP.Location = new System.Drawing.Point(226, 30);
+            this.ddlRedis_IP.Name = "ddlRedis_IP";
+            this.ddlRedis_IP.Size = new System.Drawing.Size(121, 21);
+            this.ddlRedis_IP.TabIndex = 9;
+            this.ddlRedis_IP.SelectedIndexChanged += new System.EventHandler(this.ddlRedis_IP_SelectedIndexChanged);
+            // 
+            // txtRedis_Port
+            // 
+            this.txtRedis_Port.Location = new System.Drawing.Point(350, 30);
+            this.txtRedis_Port.Name = "txtRedis_Port";
+            this.txtRedis_Port.Size = new System.Drawing.Size(53, 20);
+            this.txtRedis_Port.TabIndex = 10;
+            this.txtRedis_Port.Text = "1000";
+            this.txtRedis_Port.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // txtRedis_DB
+            // 
+            this.txtRedis_DB.Location = new System.Drawing.Point(404, 30);
+            this.txtRedis_DB.Name = "txtRedis_DB";
+            this.txtRedis_DB.Size = new System.Drawing.Size(46, 20);
+            this.txtRedis_DB.TabIndex = 11;
+            this.txtRedis_DB.Text = "8";
+            this.txtRedis_DB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // fMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(579, 135);
+            this.Controls.Add(this.txtRedis_DB);
+            this.Controls.Add(this.txtRedis_Port);
+            this.Controls.Add(this.ddlRedis_IP);
             this.Controls.Add(this.textBoxAPI);
             this.Controls.Add(this.textBoxDPI);
             this.Controls.Add(this.label5);
@@ -244,10 +289,10 @@ namespace SendFile
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ComboBox ddlService;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox selectionText_Width;
-        private System.Windows.Forms.TextBox selectionText_Height;
-        private System.Windows.Forms.TextBox selectionText_X;
-        private System.Windows.Forms.TextBox selectionText_Y;
+        private System.Windows.Forms.TextBox cropBottom;
+        private System.Windows.Forms.TextBox cropLeft;
+        private System.Windows.Forms.TextBox cropTop;
+        private System.Windows.Forms.TextBox cropRight;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
@@ -258,6 +303,9 @@ namespace SendFile
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBoxDPI;
         private System.Windows.Forms.TextBox textBoxAPI;
+        private System.Windows.Forms.ComboBox ddlRedis_IP;
+        private System.Windows.Forms.TextBox txtRedis_Port;
+        private System.Windows.Forms.TextBox txtRedis_DB;
     }
 }
 

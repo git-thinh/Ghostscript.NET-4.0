@@ -24,8 +24,15 @@ namespace SendFile
         public fMain()
         {
             InitializeComponent();
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:1000");
-            _dbWrite = redis.GetDatabase(1);
+            ddlRedis_IP.SelectedIndex = 0;
+        }
+        private void ddlRedis_IP_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string s = string.Format("{0}:{1}", ddlRedis_IP.Text, txtRedis_Port.Text);
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(s);
+            int db = 0;
+            int.TryParse(txtRedis_DB.Text, out db);
+            _dbWrite = redis.GetDatabase(db);
         }
 
         private void fMain_Load(object sender, EventArgs e)
@@ -92,7 +99,7 @@ namespace SendFile
 
                     if (!Directory.Exists("./outputs"))
                         Directory.CreateDirectory("./outputs");
-                    
+
                     apiUrlCreate();
 
                     var buf = new WebClient().DownloadData(__url);
@@ -111,8 +118,12 @@ namespace SendFile
                                 File.WriteAllBytes("./outputs/" + __id + ".pdf", buf);
                                 labelOK.Text = "SUCCESS: " + __id;
                                 break;
-                            case 3: //VECTOR_TO_PDF_SELECTION
+                            case 3: //VECTOR_TO_PDF_CROP
                                 File.WriteAllBytes("./outputs/" + __id + ".crop.pdf", buf);
+                                labelOK.Text = "SUCCESS: " + __id;
+                                break;
+                            case 4: //VECTOR_TO_PDF_ARTBOARD
+                                File.WriteAllBytes("./outputs/" + __id + ".artboard.pdf", buf);
                                 labelOK.Text = "SUCCESS: " + __id;
                                 break;
                         }
@@ -143,7 +154,8 @@ namespace SendFile
             }
         }
 
-        void apiUrlCreate() {
+        void apiUrlCreate()
+        {
             __dpi = textBoxDPI.Text.Trim();
             switch (ddlService.SelectedIndex)
             {
@@ -156,13 +168,19 @@ namespace SendFile
                 case 2: //VECTOR_TO_PDF
                     __url = __uri + "/api/vector/pdf/" + __dpi + "/" + __scope_raw + "/" + __id;
                     break;
-                case 3: //VECTOR_TO_PDF_SELECTION
+                case 3: //VECTOR_TO_PDF_CROP
                     __url = __uri + "/api/vector/pdf/crop/" + __scope_raw + "/" + __id
-                        + "/" + selectionText_X.Text + "/" + selectionText_Y.Text
-                        + "/" + selectionText_Width.Text + "/" + selectionText_Height.Text;
+                        + "/" + cropTop.Text + "/" + cropRight.Text
+                        + "/" + cropBottom.Text + "/" + cropLeft.Text;
+                    break;
+                case 4: //VECTOR_TO_PDF_ARTBOARD
+                    __url = __uri + "/api/vector/pdf/crop/" + __scope_raw + "/" + __id
+                        + "/" + cropTop.Text + "/" + cropRight.Text
+                        + "/" + cropBottom.Text + "/" + cropLeft.Text;
                     break;
             }
             textBoxAPI.Text = __url;
         }
+
     }
 }

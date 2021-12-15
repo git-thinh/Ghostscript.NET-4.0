@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using IOFile = System.IO.File;
 
@@ -335,7 +336,7 @@ namespace FileView
                         }
 
                         IOFile.Delete(fileInput);
-                        _redisWrite.StringSet(__SCOPE_REDIS + ":pdf:" + id, rs);
+                        await _redisWrite.StringSetAsync(__SCOPE_REDIS + ":pdf:" + id, rs);
                         if (rs != null)
                             return File(new MemoryStream(rs), "application/octet-stream");
                     }
@@ -421,48 +422,39 @@ namespace FileView
             return cf.ToArray();
         }
 
-        [HttpGet("pdf/crop/{scope}/{id}/{x}/{y}/{width}/{height}")]
-        public async Task<IActionResult> toPDFCrop(string scope, string id, int x, int y, int width, int height)
+        [HttpGet("pdf/crop/{key}/{top}-{right}-{bottom}-{left}")]
+        public async Task<IActionResult> toPDFCrop(string key, int top, int right, int bottom, int left)
         {
-            if (!string.IsNullOrEmpty(id) && width > 0 && height > 0)
+            if (!string.IsNullOrEmpty(key))
             {
                 try
                 {
-                    string key = scope + ":" + id;
                     byte[] buf = await _redisRead.StringGetAsync(key);
                     if (buf != null)
                     {
-                        byte[] rs = null;
-
-                        string path = _environment.WebRootPath + "\\temps\\";
-                        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                        string fileInput = path + id + "." + Helper.getFileType_byID(id);
-                        IOFile.WriteAllBytes(fileInput, buf);
-
-                        GhostscriptPipedOutput gsPipedOutput = new GhostscriptPipedOutput();
-                        string outputPipeHandle = "%handle%" + int.Parse(gsPipedOutput.ClientHandle).ToString("X2");
-                        using (GhostscriptProcessor g = new GhostscriptProcessor())
+                        string apiPdfCrop = _configuration.GetSection("ApiPdfCrop").Value;
+                        if (!string.IsNullOrEmpty(apiPdfCrop))
                         {
-                            try
-                            {
-                                g.StartProcessing(__pdf_crop(fileInput, outputPipeHandle, x, y, width, height), null);
-                                rs = gsPipedOutput.Data;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                            }
-                            finally
-                            {
-                                gsPipedOutput.Dispose();
-                                gsPipedOutput = null;
-                            }
-                        }
+                            string pos = string.Format("{0}-{1}-{2}-{3}", top, right, bottom, left);
 
-                        IOFile.Delete(fileInput);
-                        _redisWrite.StringSet(__SCOPE_REDIS + ":crop:" + id, rs);
-                        if (rs != null)
-                            return File(new MemoryStream(rs), "application/octet-stream");
+                            byte[] rs = null;
+                            string[] a = key.Split(':');
+                            string id = a[a.Length - 1];
+
+                            string path = _environment.WebRootPath + "\\crop\\";
+                            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                            string fileInput = path + id + ".pdf";
+                            string fileOutput = path + id + "." + pos + ".pdf";
+                            IOFile.WriteAllBytes(fileInput, buf);
+
+                            string url = string.Format(apiPdfCrop, key, pos);
+                            rs = new WebClient().DownloadData(url);
+
+                            //IOFile.Delete(fileInput);
+                            _redisWrite.StringSet(__SCOPE_REDIS + ":crop:" + id + "." + pos, rs);
+                            if (rs != null)
+                                return File(new MemoryStream(rs), "application/octet-stream");
+                        }
                     }
                 }
                 catch (Exception ex)

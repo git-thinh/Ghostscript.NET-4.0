@@ -28,15 +28,25 @@ namespace FileView
             _redisRead = redis.GetDB(REDIS_TYPE.READ1);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> getFile(string scope, string id)
+        [HttpGet("image/{key}")]
+        public async Task<IActionResult> getFileImage(string key)
         {
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(key))
             {
-                string key = scope + ":" + id;
                 byte[] buf = await _redisRead.StringGetAsync(key);
                 if (buf != null)
                     return File(new MemoryStream(buf), "image/png");
+            }
+            return NotFound();
+        }
+        [HttpGet("pdf/{key}")]
+        public async Task<IActionResult> getFilePdf(string key)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                byte[] buf = await _redisRead.StringGetAsync(key);
+                if (buf != null)
+                    return File(new MemoryStream(buf), "application/pdf");
             }
             return NotFound();
         }
